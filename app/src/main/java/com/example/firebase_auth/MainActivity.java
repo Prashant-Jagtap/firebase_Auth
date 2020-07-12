@@ -1,17 +1,22 @@
 package com.example.firebase_auth;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -21,6 +26,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     FirebaseAuth mAuth;
     EditText edittext_email,edittext_password;
     ProgressBar progressBar;
+    TextView forgot_password;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,9 +38,53 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         edittext_password = (EditText) findViewById(R.id.password_login);
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
 
+    forgot_password = findViewById(R.id.forgot);
 
         findViewById(R.id.textView_l).setOnClickListener(this);
         findViewById(R.id.button_login).setOnClickListener(this);
+
+        forgot_password.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final EditText resetmail = new EditText(view.getContext());
+                AlertDialog.Builder passwordResetdailogue = new AlertDialog.Builder(view.getContext());
+                passwordResetdailogue.setTitle("Reset Password");
+                passwordResetdailogue.setMessage("Enter your email to recieve reset Link :");
+                passwordResetdailogue.setView(resetmail);
+
+                passwordResetdailogue.setPositiveButton("Send" , new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        //to reset the password
+                        //mAuth.sendPasswordResetEmail(resetmail.getText().toString());
+                        String mail = resetmail.getText().toString();
+                        mAuth.sendPasswordResetEmail(mail).addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Toast.makeText(getApplicationContext(),"Reset link is send to mail",Toast.LENGTH_SHORT).show();
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(getApplicationContext(),"Mail not sent" + e.getMessage(),Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                    }
+                });
+
+                passwordResetdailogue.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        //nothing to provide as clivking this will go to same page
+                    }
+                });
+
+                passwordResetdailogue.create().show();
+
+
+            }
+        });
 
 
     }
@@ -114,6 +164,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         }
     }
+
+
 
     @Override
     public void onClick(View view) {
